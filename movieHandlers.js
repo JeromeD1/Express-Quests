@@ -1,10 +1,72 @@
 //on récupere notre database qui est notre lien avec notre base de donnée MySQL
 const database = require("./database");
 
+
+//------------------------------------------------------
+//---SOLUTION FACILE MAIS COMPLIQUEE SI BEAUCOUP DE req.query différents
+//---------------------------------------------------------------
+// const getMovies = (req, res) => {
+//   let sqlValues = [];
+//   let sql = "";
+
+//   if (req.query.color && req.query.max_duration) {
+//     sql = "SELECT * FROM movies WHERE color = ? AND duration <= ?"
+//     sqlValues.push(req.query.color)
+//     sqlValues.push(req.query.max_duration)
+//   } else if (req.query.color) {
+//     sql = "SELECT * FROM movies WHERE color = ?"
+//     sqlValues.push(req.query.color)
+//   } else if (req.query.max_duration) {
+//     sql = "SELECT * FROM movies WHERE duration <= ?"
+//     sqlValues.push(req.query.max_duration)
+//   } else {
+//     sql= "SELECT * FROM movies"
+//   }
+  
+
+//   database
+//     .query(sql, sqlValues)
+//     .then(([movies]) => { //[movies] <=> result[0] qui est la table movie d'après la commande query(...)
+//       res.json(movies);
+//     })
+//     .catch((err) => {
+//       console.error(err);
+//       res.status(500).send("Error retrieving data from database");
+//     });
+// };
+
+
+//-------------------------------------------------------
+//----SOLUTION PERMETTANT D'AJOUTER FACILEMENT PLEIN DE req.query------
 const getMovies = (req, res) => {
+  const initialSql = "select * from movies";
+  const where = [];
+
+  if (req.query.color != null) {
+    where.push({
+      column: "color",
+      value: req.query.color,
+      operator: "=",
+    });
+  }
+  if (req.query.max_duration != null) {
+    where.push({
+      column: "duration",
+      value: req.query.max_duration,
+      operator: "<=",
+    });
+  }
+
   database
-    .query("select * from movies")
-    .then(([movies]) => { //[movies] <=> result[0] qui est la table movie d'après la commande query(...)
+    .query(
+      where.reduce(
+        (sql, { column, operator }, index) =>
+          `${sql} ${index === 0 ? "where" : "and"} ${column} ${operator} ?`,
+        initialSql
+      ),
+      where.map(({ value }) => value)
+    )
+    .then(([movies]) => {
       res.json(movies);
     })
     .catch((err) => {
@@ -12,31 +74,7 @@ const getMovies = (req, res) => {
       res.status(500).send("Error retrieving data from database");
     });
 };
-
-
-//-------------------------
-//Version de moi pas optimisée car condition inutile... voir solution en dessous
-//--------------------------------------
-// const getMovieById = (req, res) => {
-//   const id = parseInt(req.params.id);
-
-//   database
-//     .query("select * from movies where id = ?", [id])
-//     .then(([movies])=> {
-//       const movie = movies.find((movie) => movie.id === id);
-  
-//       if (movie != null) {
-//         res.json(movie);
-//       } else {
-//         res.status(404).send("Pas de tableau");
-//       }
-//     })
-//     .catch((err) => {
-//       console.error(err);
-//       res.status(500).send("Error retrieving data from database");
-//     });
-// };
-//-----------------------------------
+//--------------------------------------------------
 
 
 const getMovieById = (req, res) => {
