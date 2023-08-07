@@ -15,15 +15,20 @@ const welcome = (req, res) => {
 app.get("/", welcome);
 
 const movieHandlers = require("./movieHandlers");
+const userHandlers = require("./userHandlers");
+
 
 app.get("/api/movies", movieHandlers.getMovies);
 app.get("/api/movies/:id", movieHandlers.getMovieById);
-app.get("/api/users", movieHandlers.getUsers);
-app.get("/api/users/:id", movieHandlers.getUserById);
+app.get("/api/users", userHandlers.getUsers);
+app.get("/api/users/:id", userHandlers.getUserById);
 app.post("/api/movies", movieHandlers.postMovie);
-app.post("/api/users", movieHandlers.postUser);
+app.post("/api/users", userHandlers.postUser);
 app.put("/api/movies/:id", movieHandlers.putMovieById);
-app.put("/api/users/:id", movieHandlers.putUserById);
+app.put("/api/users/:id", userHandlers.putUserById);
+app.delete("/api/movies/:id", movieHandlers.deleteMovieById);
+app.delete("/api/users/:id", userHandlers.deleteUserById);
+
 
 
 app.listen(port, (err) => {
